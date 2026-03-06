@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMR - Save Time, We Do the Rest for You!</title>
+<style>
+body { font-family: Arial; margin:0; background: linear-gradient(to bottom,#e0f7fa,#ffffff); color:#333; }
+header { background:#00796b; color:white; text-align:center; padding:30px 20px; background-image: url('https://images.unsplash.com/photo-1581579182290-44e1fcd0f8c9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8c2VhcmNofDJ8fGxhdW5kcnklMjBjbGVhbmluZ3xlbnwwfHx8fDE2ODY3Nzc2MzM&ixlib=rb-4.0.3&q=80&w=1080'); background-size:cover; background-position:center; border-bottom:5px solid #004d40; }
+header h1 { font-size:2.5em; margin:0; }
+header p { font-size:1.2em; font-style:italic; margin-top:5px; }
+nav { background:#004d40; text-align:center; padding:12px; }
+nav a { color:white; margin:0 12px; text-decoration:none; font-weight:bold; font-size:1em; }
+nav a:hover { text-decoration:underline; }
+section { padding:20px; max-width:1000px; margin:auto; }
+.services, .menu { display:flex; flex-wrap:wrap; gap:20px; justify-content:center; }
+.card { background:white; border-radius:15px; padding:15px; width:220px; box-shadow:0 5px 15px rgba(0,0,0,0.1); text-align:center; }
+.card h3 { color:#00796b; }
+.card button { background:#00796b; color:white; border:none; padding:8px 12px; margin-top:8px; cursor:pointer; border-radius:5px; }
+.card button:hover { background:#004d40; }
+form { background:white; padding:25px; border-radius:15px; max-width:500px; margin:auto; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
+input, select, textarea { width:100%; padding:10px; margin:6px 0 12px 0; border-radius:5px; border:1px solid #ccc; }
+button[type="submit"] { background:#00796b; color:white; border:none; padding:12px; cursor:pointer; border-radius:5px; font-size:1em; }
+button[type="submit"]:hover { background:#004d40; }
+footer { background:#004d40; color:white; text-align:center; padding:15px; margin-top:20px; }
+#cart { list-style:none; padding-left:0; }
+</style>
+</head>
+<body>
+
+<header>
+<h1>SMR</h1>
+<p>Save Time, We Do the Rest for You!</p>
+</header>
+
+<nav>
+<a href="#services">Services</a>
+<a href="#food">Food Menu</a>
+<a href="#order">Place Order</a>
+<a href="#contact">Contact</a>
+</nav>
+
+<section id="services">
+<h2>Our Services</h2>
+<div class="services">
+<div class="card"><h3>Laundry Pickup</h3><p>Wash, dry & fold laundry. Fast and reliable!</p></div>
+<div class="card"><h3>Home Cleaning</h3><p>Professional home cleaning services.</p></div>
+</div>
+</section>
+
+<section id="food">
+<h2>Homemade Food Menu</h2>
+<div class="menu">
+<div class="card"><h3>Chicken Adobo</h3><p>₱120</p><button onclick="addItem('Chicken Adobo')">Add</button></div>
+<div class="card"><h3>Pancit</h3><p>₱100</p><button onclick="addItem('Pancit')">Add</button></div>
+<div class="card"><h3>Fried Rice Meal</h3><p>₱90</p><button onclick="addItem('Fried Rice Meal')">Add</button></div>
+</div>
+<h3>Your Food Order:</h3>
+<ul id="cart"></ul>
+</section>
+
+<section id="order">
+<h2>Place Your Order</h2>
+<form onsubmit="submitOrder(event)">
+<label>Name</label>
+<input type="text" id="name" required>
+<label>Phone</label>
+<input type="text" id="phone" required>
+<label>Address (Alabang / Las Piñas only)</label>
+<textarea id="address" required></textarea>
+<label>Select Service</label>
+<select id="service">
+<option>Laundry Pickup</option>
+<option>Cleaning Service</option>
+<option>Food Delivery</option>
+</select>
+<label>Pickup / Delivery Date</label>
+<input type="date" id="date" required>
+<label>Payment Method</label>
+<select id="payment">
+<option>GCash / Maya (Pay First)</option>
+</select>
+<p style="font-size:0.9em;color:#555;">Please pay first via GCash / Maya using the number below and confirm your order.</p>
+<p style="font-weight:bold;color:#00796b;">GCash / Maya: 09XXXXXXXXX</p>
+<button type="submit">Submit Order</button>
+</form>
+</section>
+
+<section id="contact">
+<h2>Contact SMR</h2>
+<p>GCash / Maya: 09XXXXXXXXX</p>
+<p>Facebook Page: SMR Local Services</p>
+</section>
+
+<footer>
+<p>© 2026 SMR - Serving Alabang & Las Piñas</p>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+<script src="firebase.js"></script>
+<script>
+let cart = [];
+function addItem(item){ cart.push(item); let list=document.getElementById("cart"); let li=document.createElement("li"); li.textContent=item; list.appendChild(li);}
+function submitOrder(e){
+e.preventDefault();
+let name=document.getElementById("name").value;
+let phone=document.getElementById("phone").value;
+let address=document.getElementById("address").value;
+let service=document.getElementById("service").value;
+let date=document.getElementById("date").value;
+let payment=document.getElementById("payment").value;
+if(!address.toLowerCase().includes("alabang") && !address.toLowerCase().includes("las piñas")){alert("Sorry! SMR only serves Alabang & Las Piñas."); return;}
+db.collection("orders").add({name:name, phone:phone, address:address, service:service, date:date, payment:payment, items:cart, status:"Pending", timestamp:firebase.firestore.FieldValue.serverTimestamp()})
+.then(()=>{alert("Thank you! Your order has been submitted. Please pay via GCash/Maya first."); cart=[]; document.getElementById("cart").innerHTML=""; document.querySelector("form").reset();})
+.catch(error=>{alert("Error submitting order: "+error);});
+}
+</script>
+</body>
+</html>

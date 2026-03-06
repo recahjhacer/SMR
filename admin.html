@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SMR Admin Dashboard</title>
+</head>
+<body>
+<h1>SMR Admin Dashboard</h1>
+<table border="1" cellpadding="8">
+<thead>
+<tr>
+<th>Customer</th>
+<th>Service</th>
+<th>Items</th>
+<th>Address</th>
+<th>Payment</th>
+<th>Status</th>
+<th>Update</th>
+</tr>
+</thead>
+<tbody id="ordersTable"></tbody>
+</table>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+<script src="firebase.js"></script>
+<script>
+const ordersTable=document.getElementById("ordersTable");
+db.collection("orders").orderBy("timestamp","desc").onSnapshot(snapshot=>{
+ordersTable.innerHTML="";
+snapshot.forEach(doc=>{
+const order=doc.data();
+const tr=document.createElement("tr");
+tr.innerHTML=`
+<td>${order.name}<br>${order.phone}</td>
+<td>${order.service}</td>
+<td>${order.items.join(", ")}</td>
+<td>${order.address}</td>
+<td>${order.payment}</td>
+<td>${order.status}</td>
+<td>
+<button onclick="updateStatus('${doc.id}','Confirmed')">Confirm</button>
+<button onclick="updateStatus('${doc.id}','Completed')">Completed</button>
+</td>`;
+ordersTable.appendChild(tr);
+});
+});
+function updateStatus(id,status){db.collection("orders").doc(id).update({status:status});}
+</script>
+</body>
+</html>
