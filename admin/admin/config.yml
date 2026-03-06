@@ -1,0 +1,16 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+collections:
+  - name: "pages"
+    label: "Pages"
+    files:
+      - label: "Menu"
+        name: "menu"
+        file: "menu.json"
+        fields:
+          - {label: "Menu Items", name: "items", widget: "list"}
