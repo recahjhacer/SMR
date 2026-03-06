@@ -2,29 +2,70 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Simple Admin</title>
+  <title>Live Menu Editor</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
     textarea { width: 100%; height: 200px; }
     button { margin-top: 10px; padding: 10px 20px; }
+    #status { margin-top: 10px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>Simple Menu Editor</h1>
-  <p>Edit the JSON menu below:</p>
+  <h1>Live Menu Editor</h1>
+  <p>Edit your menu JSON below and click Save:</p>
   <textarea id="menuEditor">["Home","About","Contact"]</textarea><br>
   <button onclick="saveMenu()">Save Menu</button>
+  <p id="status"></p>
 
   <script>
-    function saveMenu() {
-      const menu = document.getElementById('menuEditor').value;
+    const binURL = 'https://api.jsonbin.io/v3/qs/69aace9b43b1c97be9b9d03f';
+    // Leave apiKey blank if bin is public
+    const apiKey = '';
+
+    async function loadMenu() {
       try {
-        const parsed = JSON.parse(menu);
-        alert("Menu saved locally! (Copy this to update your site files)\n\n" + JSON.stringify(parsed, null, 2));
-      } catch(e) {
-        alert("Invalid JSON: " + e.message);
+        const res = await fetch(binURL, {
+          headers: apiKey ? { "X-Master-Key": apiKey } : {}
+        });
+        const json = await res.json();
+        // JSONBin v3 returns { record: ... }
+        const menuData = json.record ?? json;
+        document.getElementById('menuEditor').value = JSON.stringify(menuData, null, 2);
+      } catch (err) {
+        console.log(err);
+        document.getElementById('menuEditor').value = '["Home","About","Contact"]';
       }
     }
+
+    async function saveMenu() {
+      const textarea = document.getElementById('menuEditor');
+      const status = document.getElementById('status');
+      const menuText = textarea.value;
+
+      try {
+        const parsed = JSON.parse(menuText);
+
+        const res = await fetch(binURL, {
+          method: 'PUT',
+          headers: {
+            "Content-Type": "application/json",
+            ...(apiKey ? {"X-Master-Key": apiKey} : {})
+          },
+          body: JSON.stringify(parsed)
+        });
+
+        if (res.ok) {
+          status.textContent = '✅ Menu updated live!';
+        } else {
+          status.textContent = '❌ Failed to save — check bin settings';
+        }
+      } catch (err) {
+        alert('Invalid JSON: ' + err.message);
+      }
+    }
+
+    loadMenu();
   </script>
 </body>
 </html>
+
